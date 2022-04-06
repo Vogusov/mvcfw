@@ -1,0 +1,10 @@
+{
+    "name": "vogusov/mvcfw",
+    "description": "mvc php framework from scratch",
+    "autoload": {
+        "psr-4": {
+            "app\\": "./"
+        }
+    },
+    "require": {}
+}
