@@ -8,7 +8,7 @@ namespace app\core;
  */
 class Router
 {
-
+//    public SiteController $siteController;
     public Response $response;
     public Request $request;
     protected array $routes = [];
@@ -17,8 +17,9 @@ class Router
      * @param Request $request
      * @param Response $response
      */
-    public function __construct(Request $request, Response $response)
+    public function __construct(Request $request, Response $response) //
     {
+//        $this->siteController = $siteController;
         $this->request = $request;
         $this->response = $response;
     }
@@ -46,22 +47,45 @@ class Router
         if (is_string($callback)) {
             return $this->renderView($callback);
         }
-        return call_user_func($callback);
+        if (is_array($callback)) {
+            $callback[0] = new $callback[0];
+//            return $this->renderView($callback);
+        }
+//        var_dump($callback);
+        return call_user_func($callback, $this->request);
     }
 
-    private function renderView(string $view)
+    /**
+     * Рендер шаблона с данными из view
+     * @param string $view
+     * @return array|false|string|string[]
+     */
+    public function renderView(string $view, array $params = [])
     {
         $layoutContent = $this->layoutContent();
-        $viewContent = $this->renderOnlyView($view);
+        $viewContent = $this->renderOnlyView($view, $params);
         return str_replace('{{content}}', $viewContent, $layoutContent);
     }
 
-    private function renderContent(string $viewContent)
+    /**
+     * Получение данных из шаблона для интеграции в view
+     * @param string $view Название view-файла с данными
+     * @return false|string
+     */
+    protected function renderOnlyView(string $view, ?array $params)
     {
-        $layoutContent = $this->layoutContent();
-        return str_replace('{{content}}', $viewContent, $layoutContent);
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+        ob_start();
+        include_once Application::$ROOT_DIR . "/views/$view.php";
+        return ob_get_clean();
     }
 
+    /**
+     * Получение основного шаблона для вставки туда данных для рендера страницы
+     * @return false|string
+     */
     private function layoutContent()
     {
         ob_start();
@@ -69,11 +93,9 @@ class Router
         return ob_get_clean();
     }
 
-    protected function renderOnlyView(string $view)
+    public function renderContent(string $viewContent)
     {
-        ob_start();
-        include_once Application::$ROOT_DIR . "/views/$view.php";
-        return ob_get_clean();
-
+        $layoutContent = $this->layoutContent();
+        return str_replace('{{content}}', $viewContent, $layoutContent);
     }
 }
