@@ -2,12 +2,15 @@
 
 namespace app\core;
 
+use app\controllers\AuthController;
+
 /**
  * Class Router
  * @package app\core;
  */
 class Router
 {
+//    public AuthController $authController;
 //    public SiteController $siteController;
     public Response $response;
     public Request $request;
@@ -38,7 +41,7 @@ class Router
     public function resolve()
     {
         $path = $this->request->getPath();
-        $method = $this->request->getMethod();
+        $method = $this->request->method();
         $callback = $this->routes[$method][$path] ?? false;
         if ($callback === false) {
             $this->response->setStatusCode(404);
@@ -48,10 +51,9 @@ class Router
             return $this->renderView($callback);
         }
         if (is_array($callback)) {
-            $callback[0] = new $callback[0];
-//            return $this->renderView($callback);
+            Application::$app->controller = new $callback[0]();
+            $callback[0] = Application::$app->controller;
         }
-//        var_dump($callback);
         return call_user_func($callback, $this->request);
     }
 
@@ -88,8 +90,9 @@ class Router
      */
     private function layoutContent()
     {
+        $layout = Application::$app->controller->layout;
         ob_start();
-        include_once Application::$ROOT_DIR . "/views/layouts/main.php";
+        include_once Application::$ROOT_DIR . "/views/layouts/$layout.php";
         return ob_get_clean();
     }
 
