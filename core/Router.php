@@ -60,6 +60,7 @@ class Router
     /**
      * Рендер шаблона с данными из view
      * @param string $view
+     * @param array $params
      * @return array|false|string|string[]
      */
     public function renderView(string $view, array $params = [])
@@ -96,6 +97,11 @@ class Router
         return ob_get_clean();
     }
 
+    /**
+     * !! Не используется
+     * @param string $viewContent
+     * @return array|false|string|string[]
+     */
     public function renderContent(string $viewContent)
     {
         $layoutContent = $this->layoutContent();
