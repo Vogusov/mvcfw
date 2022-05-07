@@ -43,7 +43,6 @@ abstract class Model
     abstract public function rules(): array;
 
 
-
     public function validate()
     {
         foreach ($this->rules() as $attribute => $rules) {
@@ -55,7 +54,6 @@ abstract class Model
                 }
                 /* Валидация RULE_REQUIRED */
                 if ($ruleName === self::RULE_REQUIRED && !$value) { // если значение не существует (не введено пользователем)
-                    // todo STOP HERE at 19:54
                     $this->addError($attribute, self::RULE_REQUIRED);
                 }
                 /* Валидация RULE_EMAIL */
@@ -71,7 +69,7 @@ abstract class Model
                     $this->addError($attribute, self::RULE_MAX, $rule);
                 }
                 /* Валидация RULE_MATCH */
-                if ($ruleName === self::RULE_MATCH && $value !== $rule['match']) {
+                if ($ruleName === self::RULE_MATCH && $value !== $this->{$rule['match']}) {
                     $this->addError($attribute, self::RULE_MATCH, $rule);
                 }
             }
@@ -79,6 +77,14 @@ abstract class Model
         return empty($this->errors);
     }
 
+    /**
+     * Добавляет ошибки в массив,
+     * заменяя поля значениями
+     * @param string $attribute
+     * @param string $rule
+     * @param $params
+     * @return void
+     */
     public function addError(string $attribute, string $rule, $params = [])
     {
         $message = $this->errorMessages()[$rule] ?? '';
@@ -89,15 +95,38 @@ abstract class Model
         $this->errors[$attribute][] = $message;
     }
 
-
+    /**
+     * Список сообщений об ошибках валидации
+     * @return string[]
+     */
     public function errorMessages()
     {
         return [
             self::RULE_REQUIRED => 'This field required',
-            self::RULE_EMAIL => 'This field must valid email address',
+            self::RULE_EMAIL => 'This field must be valid email address',
             self::RULE_MIN => 'Min length of this field must be {min}',
             self::RULE_MAX => 'Max length of this field must be {max}',
             self::RULE_MATCH => 'This field must be the same as {match}'
         ];
+    }
+
+    /**
+     * Проверяет, есть ли ошибки после валидации формы
+     * @param string $attribute
+     * @return false|mixed
+     */
+    public function hasError(string $attribute)
+    {
+        return $this->errors[$attribute] ?? false;
+    }
+
+    /**
+     * Получить первое сообщение об ошибке из имеющихся после валидации формы
+     * @param string $attribute
+     * @return false|mixed
+     */
+    public function getFirstError(string $attribute)
+    {
+        return $this->errors[$attribute][0] ?? false;
     }
 }
