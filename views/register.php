@@ -6,7 +6,6 @@
     </div>
     <div class="col">
         <?php echo $form->field($model, 'lastname') ?>
-
     </div>
 </div>
 <?php echo $form->field($model, 'email'); ?>

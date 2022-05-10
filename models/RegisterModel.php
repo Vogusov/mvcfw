@@ -8,7 +8,6 @@ class RegisterModel extends Model
 {
     /**
      * Названия валидируемых атрибутов формы регистрации
-     *
      */
     public string $firstname = '';
     public string $lastname = '';
