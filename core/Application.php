@@ -38,7 +38,7 @@ class Application
 
     public function run()
     {
-       echo $this->router->resolve();
+        echo $this->router->resolve();
     }
 
     /**
@@ -56,6 +56,4 @@ class Application
     {
         $this->controller = $controller;
     }
-
-
 }
