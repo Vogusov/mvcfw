@@ -43,6 +43,16 @@ abstract class Model
      */
     abstract public function rules(): array;
 
+    public function labels(): array
+    {
+        return [];
+    }
+
+    public function getLabel($attribute)
+    {
+        return $this->labels()[$attribute] ?? $attribute;
+    }
+
 
     public function validate()
     {
@@ -63,14 +73,17 @@ abstract class Model
                 }
                 /* Валидация RULE_MIN */
                 if ($ruleName === self::RULE_MIN && strlen($value) < $rule['min']) {
+                    $rule['field'] = $this->getLabel($attribute);
                     $this->addError($attribute, self::RULE_MIN, $rule);
                 }
                 /* Валидация RULE_MAX */
                 if ($ruleName === self::RULE_MAX && strlen($value) > $rule['max']) {
+                    $rule['field'] = $this->getLabel($attribute);
                     $this->addError($attribute, self::RULE_MAX, $rule);
                 }
                 /* Валидация RULE_MATCH */
                 if ($ruleName === self::RULE_MATCH && $value !== $this->{$rule['match']}) {
+                    $rule['match'] = $this->getLabel($rule['match']);
                     $this->addError($attribute, self::RULE_MATCH, $rule);
                 }
                 /* Валидация RULE_UNIQUE */
@@ -83,7 +96,7 @@ abstract class Model
                     $statement->execute();
                     $record = $statement->fetchObject();
                     if ($record) {
-                        $this->addError($attribute, self::RULE_UNIQUE, ['field' => $attribute]);
+                        $this->addError($attribute, self::RULE_UNIQUE, ['field' => $this->getLabel($attribute)]);
                     }
                 }
             }
@@ -118,8 +131,8 @@ abstract class Model
         return [
             self::RULE_REQUIRED => 'This field required',
             self::RULE_EMAIL => 'This field must be valid email address',
-            self::RULE_MIN => 'Min length of this field must be {min}',
-            self::RULE_MAX => 'Max length of this field must be {max}',
+            self::RULE_MIN => 'Min length of {field} field must be {min}',
+            self::RULE_MAX => 'Max length of {field} field must be {max}',
             self::RULE_MATCH => 'This field must be the same as {match}',
             self::RULE_UNIQUE => 'Record with this {field} already exists',
         ];
