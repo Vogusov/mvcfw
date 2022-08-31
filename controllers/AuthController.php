@@ -5,7 +5,9 @@ namespace app\controllers;
 use app\core\Application;
 use app\core\Controller;
 use app\core\Request;
+use app\core\Response;
 use app\models\User;
+use app\models\LoginForm;
 
 class AuthController extends Controller
 {
@@ -13,10 +15,21 @@ class AuthController extends Controller
      * Управляет авторизацией
      * @return array|false|string|string[]
      */
-    public function login()
+    public function login(Request $request, Response $response)
     {
+        $loginForm = new LoginForm();
+        if ($request->isPost()) {
+            $loginForm->loadData($request->getBody());
+            if ($loginForm->validate() && $loginForm->login()) {
+                $response->redirect('/');
+                return;
+            }
+        }
+
         $this->setLayout('auth');
-        return $this->render('login');
+        return $this->render('login', [
+            'model' => $loginForm
+        ]);
     }
 
     /**
@@ -26,7 +39,7 @@ class AuthController extends Controller
      * @param Request $request
      * @return array|false|string|string[]|void
      */
-    public function register(Request $request)
+    public function register(Request $request, Response $response)
     {
         $user = new User();
 
@@ -34,7 +47,7 @@ class AuthController extends Controller
             $user->loadData($request->getBody());
             if ($user->validate() && $user->save()) {
                 Application::$app->session->setFlash('success', 'Thanks for registering');
-                Application::$app->response->redirect('/');
+                $response->redirect('/');
                 exit;
             }
             return $this->render('register', [
@@ -48,5 +61,11 @@ class AuthController extends Controller
                 'model' => $user,
             ]);;
         }
+    }
+
+    public function logout(Request $request, Response $response)
+    {
+        Application::$app->logout();
+        $response->redirect('/');
     }
 }

@@ -65,26 +65,26 @@ abstract class Model
                 }
                 /* Валидация RULE_REQUIRED */
                 if ($ruleName === self::RULE_REQUIRED && !$value) { // если значение не существует (не введено пользователем)
-                    $this->addError($attribute, self::RULE_REQUIRED);
+                    $this->addErrorForRule($attribute, self::RULE_REQUIRED);
                 }
                 /* Валидация RULE_EMAIL */
                 if ($ruleName === self::RULE_EMAIL && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                    $this->addError($attribute, self::RULE_EMAIL);
+                    $this->addErrorForRule($attribute, self::RULE_EMAIL);
                 }
                 /* Валидация RULE_MIN */
                 if ($ruleName === self::RULE_MIN && strlen($value) < $rule['min']) {
                     $rule['field'] = $this->getLabel($attribute);
-                    $this->addError($attribute, self::RULE_MIN, $rule);
+                    $this->addErrorForRule($attribute, self::RULE_MIN, $rule);
                 }
                 /* Валидация RULE_MAX */
                 if ($ruleName === self::RULE_MAX && strlen($value) > $rule['max']) {
                     $rule['field'] = $this->getLabel($attribute);
-                    $this->addError($attribute, self::RULE_MAX, $rule);
+                    $this->addErrorForRule($attribute, self::RULE_MAX, $rule);
                 }
                 /* Валидация RULE_MATCH */
                 if ($ruleName === self::RULE_MATCH && $value !== $this->{$rule['match']}) {
                     $rule['match'] = $this->getLabel($rule['match']);
-                    $this->addError($attribute, self::RULE_MATCH, $rule);
+                    $this->addErrorForRule($attribute, self::RULE_MATCH, $rule);
                 }
                 /* Валидация RULE_UNIQUE */
                 if ($ruleName === self::RULE_UNIQUE) {
@@ -96,7 +96,7 @@ abstract class Model
                     $statement->execute();
                     $record = $statement->fetchObject();
                     if ($record) {
-                        $this->addError($attribute, self::RULE_UNIQUE, ['field' => $this->getLabel($attribute)]);
+                        $this->addErrorForRule($attribute, self::RULE_UNIQUE, ['field' => $this->getLabel($attribute)]);
                     }
                 }
             }
@@ -105,6 +105,7 @@ abstract class Model
     }
 
     /**
+     * Добавляет ошибки для правил.
      * Добавляет ошибки в массив,
      * заменяя поля значениями
      * @param string $attribute
@@ -112,13 +113,23 @@ abstract class Model
      * @param $params
      * @return void
      */
-    public function addError(string $attribute, string $rule, $params = [])
+    private function addErrorForRule(string $attribute, string $rule, $params = [])
     {
         $message = $this->errorMessages()[$rule] ?? '';
         /* Подстановка значений параметров в сообщения */
         foreach ($params as $key => $value) {
             $message = str_replace("{{$key}}", $value, $message);
         }
+        $this->errors[$attribute][] = $message;
+    }
+
+    /**
+     * Добавляет ошибки
+     * @param string $attribute
+     * @param string $message
+     */
+    public function addError(string $attribute, string $message)
+    {
         $this->errors[$attribute][] = $message;
     }
 
