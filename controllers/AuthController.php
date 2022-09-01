@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\core\Application;
 use app\core\Controller;
+use app\core\middlewares\AuthMiddleware;
 use app\core\Request;
 use app\core\Response;
 use app\models\User;
@@ -11,6 +12,16 @@ use app\models\LoginForm;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        /**
+         * Класс. Работает между Requerst и Controller.
+         * Напримр, может запрещать доступ к страницам или ко всему контроллеру.
+         */
+        $this->registerMiddleware(new AuthMiddleware(['profile']));
+    }
+
+
     /**
      * Управляет авторизацией
      * @return array|false|string|string[]
@@ -67,5 +78,9 @@ class AuthController extends Controller
     {
         Application::$app->logout();
         $response->redirect('/');
+    }
+
+    public function profile() {
+        return $this->render('profile');
     }
 }

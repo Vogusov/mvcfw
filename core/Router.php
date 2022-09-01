@@ -2,7 +2,7 @@
 
 namespace app\core;
 
-use app\controllers\AuthController;
+use app\core\exception\NotFoundException;
 
 /**
  * Class Router
@@ -10,8 +10,6 @@ use app\controllers\AuthController;
  */
 class Router
 {
-//    public AuthController $authController;
-//    public SiteController $siteController;
     public Response $response;
     public Request $request;
     protected array $routes = [];
@@ -22,7 +20,7 @@ class Router
      */
     public function __construct(Request $request, Response $response) //
     {
-//        $this->siteController = $siteController;
+        //        $this->siteController = $siteController;
         $this->request = $request;
         $this->response = $response;
     }
@@ -44,15 +42,24 @@ class Router
         $method = $this->request->method();
         $callback = $this->routes[$method][$path] ?? false;
         if ($callback === false) {
-            $this->response->setStatusCode(404);
-            return $this->renderView('404');
+            
+            throw new NotFoundException();
         }
         if (is_string($callback)) {
             return $this->renderView($callback);
         }
         if (is_array($callback)) {
-            Application::$app->controller = new $callback[0]();
-            $callback[0] = Application::$app->controller;
+            /**
+             * @var \app\core\Controller $controller
+             */
+            $controller = new $callback[0]();
+            Application::$app->controller = $controller;
+            $controller->action = $callback[1];
+            $callback[0] =  $controller;
+
+            foreach($controller->getMiddlewares() as $middleware) {
+                $middleware->execute();
+            }
         }
         return call_user_func($callback, $this->request, $this->response);
     }
@@ -91,7 +98,10 @@ class Router
      */
     private function layoutContent()
     {
-        $layout = Application::$app->controller->layout;
+        $layout = Application::$app->layout;
+        if (Application::$app->controller) {
+            $layout = Application::$app->controller->layout;
+        }
         ob_start();
         include_once Application::$ROOT_DIR . "/views/layouts/$layout.php";
         return ob_get_clean();
