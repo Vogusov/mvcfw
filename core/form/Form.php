@@ -12,13 +12,17 @@ class Form
         return new Form();
     }
 
+
+
     public static function end(): void
     {
         echo '</form>';
     }
 
-    public static function field(Model $model, string $attribute): Field
+
+
+    public static function field(Model $model, string $attribute): InputField
     {
-        return new Field($model, $attribute);
+        return new InputField($model, $attribute);
     }
 }

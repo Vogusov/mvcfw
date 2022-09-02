@@ -10,6 +10,8 @@ class LoginForm extends Model
     public string $email = '';
     public string $password = '';
 
+
+
     public function rules(): array
     {
         return [
@@ -18,6 +20,8 @@ class LoginForm extends Model
         ];
     }
 
+
+
     public function labels(): array
     {
         return [
@@ -25,6 +29,8 @@ class LoginForm extends Model
             'password' => 'Password',
         ];
     }
+
+
 
     public function login()
     {

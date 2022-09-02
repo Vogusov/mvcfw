@@ -1,4 +1,8 @@
-<h1>Profife</h1>
+<?php
 
-<p>Your profile</p>
-</form>
+/** @var $this \app\core\View */
+$this->title = 'Profile';
+?>
+
+
+<h1>Profile</h1>

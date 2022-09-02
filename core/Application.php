@@ -3,6 +3,8 @@
 namespace app\core;
 
 use app\controllers\SiteController;
+use app\core\db\Database;
+use app\core\db\DbModel;
 
 
 /**
@@ -23,7 +25,8 @@ class Application
     public Session $session;
     public Database $db;
     public ?Controller $controller = null;
-    public ?DbModel $user;
+    public ?UserModel $user;
+    public View $view;
 
     /**
      * @param $rootPath
@@ -39,6 +42,7 @@ class Application
         $this->session = new Session();
         $this->request = new Request();
         $this->router = new Router($this->request, $this->response);
+        $this->view = new View;
 
         $this->db = new Database($config['db']);
 
@@ -52,17 +56,20 @@ class Application
     }
 
 
+
     public function run()
     {
         try {
             echo $this->router->resolve();
         } catch (\Throwable $e) {
             $this->response->setStatusCode($e->getCode());
-            echo $this->router->renderView('_error', [
+            echo $this->view->renderView('_error', [
                 'exception' => $e
             ]);
         }
     }
+
+
 
     /**
      * @return Controller
@@ -72,6 +79,8 @@ class Application
         return $this->controller;
     }
 
+
+
     /**
      * @param Controller $controller
      */
@@ -80,7 +89,9 @@ class Application
         $this->controller = $controller;
     }
 
-    public function login(DbModel $user)
+
+
+    public function login(UserModel $user)
     {
         $this->user = $user;
         $primaryKey = $user->primaryKey();
@@ -89,13 +100,18 @@ class Application
         return true;
     }
 
+
+
     public function logout()
     {
         $this->user = null;
         $this->session->remove('user');
     }
 
-    public static function isGuest() {
+
+    
+    public static function isGuest()
+    {
         return !self::$app->user;
     }
 }
